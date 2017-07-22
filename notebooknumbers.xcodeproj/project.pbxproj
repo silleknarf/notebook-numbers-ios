@@ -12,8 +12,8 @@
 		1CDE226A1F23AABB00B94435 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1CDE22681F23AABB00B94435 /* Main.storyboard */; };
 		1CDE226C1F23AABB00B94435 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1CDE226B1F23AABB00B94435 /* Assets.xcassets */; };
 		1CDE226F1F23AABB00B94435 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1CDE226D1F23AABB00B94435 /* LaunchScreen.storyboard */; };
-		1CDE227A1F23AABB00B94435 /* notebooknumbersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDE22791F23AABB00B94435 /* notebooknumbersTests.swift */; };
 		1CDE22851F23AABB00B94435 /* notebooknumbersUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CDE22841F23AABB00B94435 /* notebooknumbersUITests.swift */; };
+		1CDE22951F23B31C00B94435 /* notebook-numbers in Resources */ = {isa = PBXBuildFile; fileRef = 1CDE22941F23B31C00B94435 /* notebook-numbers */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -42,11 +42,10 @@
 		1CDE226E1F23AABB00B94435 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		1CDE22701F23AABB00B94435 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CDE22751F23AABB00B94435 /* notebooknumbersTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = notebooknumbersTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		1CDE22791F23AABB00B94435 /* notebooknumbersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notebooknumbersTests.swift; sourceTree = "<group>"; };
-		1CDE227B1F23AABB00B94435 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1CDE22801F23AABB00B94435 /* notebooknumbersUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = notebooknumbersUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		1CDE22841F23AABB00B94435 /* notebooknumbersUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = notebooknumbersUITests.swift; sourceTree = "<group>"; };
 		1CDE22861F23AABB00B94435 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1CDE22941F23B31C00B94435 /* notebook-numbers */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "notebook-numbers"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,7 +77,6 @@
 			isa = PBXGroup;
 			children = (
 				1CDE22631F23AABB00B94435 /* notebooknumbers */,
-				1CDE22781F23AABB00B94435 /* notebooknumbersTests */,
 				1CDE22831F23AABB00B94435 /* notebooknumbersUITests */,
 				1CDE22621F23AABB00B94435 /* Products */,
 			);
@@ -97,6 +95,7 @@
 		1CDE22631F23AABB00B94435 /* notebooknumbers */ = {
 			isa = PBXGroup;
 			children = (
+				1CDE22941F23B31C00B94435 /* notebook-numbers */,
 				1CDE22641F23AABB00B94435 /* AppDelegate.swift */,
 				1CDE22661F23AABB00B94435 /* ViewController.swift */,
 				1CDE22681F23AABB00B94435 /* Main.storyboard */,
@@ -105,15 +104,6 @@
 				1CDE22701F23AABB00B94435 /* Info.plist */,
 			);
 			path = notebooknumbers;
-			sourceTree = "<group>";
-		};
-		1CDE22781F23AABB00B94435 /* notebooknumbersTests */ = {
-			isa = PBXGroup;
-			children = (
-				1CDE22791F23AABB00B94435 /* notebooknumbersTests.swift */,
-				1CDE227B1F23AABB00B94435 /* Info.plist */,
-			);
-			path = notebooknumbersTests;
 			sourceTree = "<group>";
 		};
 		1CDE22831F23AABB00B94435 /* notebooknumbersUITests */ = {
@@ -193,15 +183,18 @@
 				TargetAttributes = {
 					1CDE22601F23AABB00B94435 = {
 						CreatedOnToolsVersion = 8.3.3;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Automatic;
 					};
 					1CDE22741F23AABB00B94435 = {
 						CreatedOnToolsVersion = 8.3.3;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 1CDE22601F23AABB00B94435;
 					};
 					1CDE227F1F23AABB00B94435 = {
 						CreatedOnToolsVersion = 8.3.3;
+						LastSwiftMigration = 0830;
 						ProvisioningStyle = Automatic;
 						TestTargetID = 1CDE22601F23AABB00B94435;
 					};
@@ -233,6 +226,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1CDE226F1F23AABB00B94435 /* LaunchScreen.storyboard in Resources */,
+				1CDE22951F23B31C00B94435 /* notebook-numbers in Resources */,
 				1CDE226C1F23AABB00B94435 /* Assets.xcassets in Resources */,
 				1CDE226A1F23AABB00B94435 /* Main.storyboard in Resources */,
 			);
@@ -268,7 +262,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1CDE227A1F23AABB00B94435 /* notebooknumbersTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
