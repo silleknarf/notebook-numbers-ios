@@ -14,11 +14,10 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
         // Load the notebook numbers html
-        let localfilePath = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory:"notebook-numbers");
-        var myRequest = URLRequest(url: localfilePath!);
-        let userAgent = "notebook-numbers-ios";
-        myRequest.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        let localfilePath = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "notebook-numbers");
+        let myRequest = URLRequest(url: localfilePath!);
         webView.loadRequest(myRequest);
     }
 
