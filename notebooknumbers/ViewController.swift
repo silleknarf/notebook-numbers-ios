@@ -6,18 +6,27 @@
 //  Copyright © 2017 silleknarf. All rights reserved.
 //
 
-import UIKit
 import GameKit
-import SwiftJavaScriptBridge
+import SwiftWebViewBridge
+import WebKit
 
-class ViewController: UIViewController, GKGameCenterControllerDelegate {
-    @IBOutlet weak var webView: UIWebView!
+class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScriptMessageHandler {
+    
+    private var webView: WKWebView?;
+    
+    let LOGGED_IN_EVENT = "SYSTEM:LEADERBOARDS:LOGGED_IN";
+    let LOGGED_OUT_EVENT = "SYSTEM:LEADERBOARDS:LOGGED_OUT";
+    let CHECK_LOGIN_EVENT = "SYSTEM:SWIFT:CHECK_LOGIN";
+    let LOG_IN_EVENT = "SYSTEM:SWIFT:LOG_IN";
+    let UPDATE_LEADERBOARD_EVENT = "SYSTEM:SWIFT:UPDATE_LEADERBOARDS";
+    let OPEN_LEADERBOARD_EVENT = "SYSTEM:SWIFT:OPEN_LEADERBOARDS";
     
     /* Variables */
     var gcEnabled = Bool() // Check if the user has Game Center enabled
     var gcDefaultLeaderBoard = String() // Check the default leaderboardID
     
     var score = 0
+    var isLoggedIn = false;
     
     // IMPORTANT: replace the red string below with your own Leaderboard ID (the one you've set in iTunes Connect)
     let LEADERBOARD_ID = "com.silleknarf.notebooknumbers.highscores"
@@ -25,20 +34,54 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        let contentController = WKUserContentController()
+        contentController.add(self, name: "swift")
+        let config = WKWebViewConfiguration()
+        config.userContentController = contentController
+        
+        webView = WKWebView(frame: .zero, configuration: config)
+        view = webView
         
         // Call the GC authentication controller
-        authenticateLocalPlayer();
-        
-        let bridge = SwiftJavaScriptBridge.bridge(webView, defaultHandler: { data, responseCallback in
-            print("Swift received message from JS: \(data)")
-            responseCallback("Swift already got your msg, thanks")
-        })
-        bridge.
+        authenticateLocalPlayer()
         
         // Load the notebook numbers html
-        let localfilePath = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "notebook-numbers");
-        let myRequest = URLRequest(url: localfilePath!);
-        webView.loadRequest(myRequest);
+        let htmlPath = Bundle.main.path(forResource: "index", ofType: "html", inDirectory: "notebook-numbers")
+        let htmlUrl = URL(fileURLWithPath: htmlPath!, isDirectory: false)
+        webView!.loadFileURL(htmlUrl, allowingReadAccessTo: htmlUrl)
+    }
+    
+    func runJavaScriptEvent(event: String) {
+        let event = "eventManager.vent.trigger('" + event + "')"
+        self.webView!.evaluateJavaScript(event)
+    }
+    
+    func checkLogInStatus() {
+        if (self.isLoggedIn) {
+            runJavaScriptEvent(event: LOGGED_IN_EVENT)
+        } else {
+            runJavaScriptEvent(event: LOGGED_OUT_EVENT)
+        }
+    }
+    
+    public func userContentController(
+        _ userContentController: WKUserContentController,
+        didReceive message: WKScriptMessage) {
+        
+        let body = message.body
+        if let dict = body as? Dictionary<String, AnyObject> {
+            let event = dict["event"] as? String;
+            if (event == CHECK_LOGIN_EVENT) {
+                checkLogInStatus();
+            } else if (event == OPEN_LEADERBOARD_EVENT) {
+                openLeaderboardinGC()
+            } else if (event == UPDATE_LEADERBOARD_EVENT) {
+                let score = dict["params"] as! Int64
+                updateLeaderboardInGC(score: score)
+            } else if (event == LOG_IN_EVENT) {
+                authenticateLocalPlayer()
+            }
+        }
     }
     
     // MARK: - AUTHENTICATE LOCAL PLAYER
@@ -49,6 +92,8 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate {
             if((ViewController) != nil) {
                 // 1. Show login if player is not logged in
                 self.present(ViewController!, animated: true, completion: nil)
+                self.runJavaScriptEvent(event: self.LOGGED_OUT_EVENT)
+                self.isLoggedIn = true
             } else if (localPlayer.isAuthenticated) {
                 // 2. Player is already authenticated & logged in, load game center
                 self.gcEnabled = true
@@ -61,20 +106,21 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate {
                         self.gcDefaultLeaderBoard = leaderboardIdentifer!
                     }
                 })
+                self.runJavaScriptEvent(event: self.LOGGED_IN_EVENT);
+                self.isLoggedIn = true;
             } else {
                 // 3. Game center is not enabled on the users device
                 self.gcEnabled = false
                 print("Local player could not be authenticated!")
                 print(error!)
+                self.runJavaScriptEvent(event: self.LOGGED_OUT_EVENT)
+                self.isLoggedIn = false
             }
         }
     }
     
     // MARK: - ADD 10 POINTS TO THE SCORE AND SUBMIT THE UPDATED SCORE TO GAME CENTER
-    @IBAction func addScoreAndSubmitToGC(_ sender: AnyObject) {
-        // Add 10 points to current score
-        score += 10
-        
+    @IBAction func updateLeaderboardInGC(score: Int64) {
         // Submit score to GC leaderboard
         let bestScoreInt = GKScore(leaderboardIdentifier: LEADERBOARD_ID)
         bestScoreInt.value = Int64(score)
@@ -88,7 +134,7 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate {
     }
     
     // MARK: - OPEN GAME CENTER LEADERBOARD
-    @IBAction func checkGCLeaderboard(_ sender: AnyObject) {
+    @IBAction func openLeaderboardinGC() {
         let gcVC = GKGameCenterViewController()
         gcVC.gameCenterDelegate = self
         gcVC.viewState = .leaderboards
@@ -108,7 +154,7 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate {
     
     override func viewDidLayoutSubviews() {
         // Make full screen
-        webView.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: self.view.frame.size.height);
+        webView!.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: self.view.frame.size.height)
     }
 }
 
