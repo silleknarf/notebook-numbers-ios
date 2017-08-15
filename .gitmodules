@@ -1,3 +1,4 @@
 [submodule "notebooknumbers/notebook-numbers"]
 	path = notebooknumbers/notebook-numbers
 	url = git@github.com:silleknarf/notebook-numbers.git
+    ignore = dirty
