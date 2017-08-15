@@ -7,7 +7,6 @@
 //
 
 import GameKit
-import SwiftWebViewBridge
 import WebKit
 
 class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScriptMessageHandler {
@@ -17,7 +16,6 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
     let LOGGED_IN_EVENT = "SYSTEM:LEADERBOARDS:LOGGED_IN";
     let LOGGED_OUT_EVENT = "SYSTEM:LEADERBOARDS:LOGGED_OUT";
     let CHECK_LOGIN_EVENT = "SYSTEM:SWIFT:CHECK_LOGIN";
-    let LOG_IN_EVENT = "SYSTEM:SWIFT:LOG_IN";
     let UPDATE_LEADERBOARD_EVENT = "SYSTEM:SWIFT:UPDATE_LEADERBOARDS";
     let OPEN_LEADERBOARD_EVENT = "SYSTEM:SWIFT:OPEN_LEADERBOARDS";
     
@@ -78,8 +76,6 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
             } else if (event == UPDATE_LEADERBOARD_EVENT) {
                 let score = dict["params"] as! Int64
                 updateLeaderboardInGC(score: score)
-            } else if (event == LOG_IN_EVENT) {
-                authenticateLocalPlayer()
             }
         }
     }
@@ -112,7 +108,6 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
                 // 3. Game center is not enabled on the users device
                 self.gcEnabled = false
                 print("Local player could not be authenticated!")
-                print(error!)
                 self.runJavaScriptEvent(event: self.LOGGED_OUT_EVENT)
                 self.isLoggedIn = false
             }
@@ -121,6 +116,9 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
     
     // MARK: - ADD 10 POINTS TO THE SCORE AND SUBMIT THE UPDATED SCORE TO GAME CENTER
     @IBAction func updateLeaderboardInGC(score: Int64) {
+        if (!self.isLoggedIn) {
+            return
+        }
         // Submit score to GC leaderboard
         let bestScoreInt = GKScore(leaderboardIdentifier: LEADERBOARD_ID)
         bestScoreInt.value = Int64(score)
@@ -154,7 +152,11 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
     
     override func viewDidLayoutSubviews() {
         // Make full screen
-        webView!.frame = CGRect(x: 0, y: 0, width: self.view.frame.size.width, height: self.view.frame.size.height)
+        webView!.frame = CGRect(
+            x: 0,
+            y: 0,
+            width: self.view.frame.size.width,
+            height: self.view.frame.size.height)
     }
 }
 
