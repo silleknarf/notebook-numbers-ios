@@ -8,8 +8,9 @@
 
 import GameKit
 import WebKit
+import UIKit
 
-class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScriptMessageHandler {
+class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScriptMessageHandler, UIWebViewDelegate {
     
     private var webView: WKWebView?;
     
@@ -19,38 +20,111 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
     let UPDATE_LEADERBOARD_EVENT = "SYSTEM:SWIFT:UPDATE_LEADERBOARDS";
     let OPEN_LEADERBOARD_EVENT = "SYSTEM:SWIFT:OPEN_LEADERBOARDS";
     
-    /* Variables */
     var gcEnabled = Bool() // Check if the user has Game Center enabled
     var gcDefaultLeaderBoard = String() // Check the default leaderboardID
     
     var score = 0
     var isLoggedIn = false;
+    var isUIWebViewLoaded = false;
     
-    // IMPORTANT: replace the red string below with your own Leaderboard ID (the one you've set in iTunes Connect)
     let LEADERBOARD_ID = "com.silleknarf.notebooknumbers.highscores"
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        let contentController = WKUserContentController()
-        contentController.add(self, name: "swift")
-        let config = WKWebViewConfiguration()
-        config.userContentController = contentController
-        
-        webView = WKWebView(frame: .zero, configuration: config)
-        view = webView
         
         // Call the GC authentication controller
         authenticateLocalPlayer()
         
-        // Load the notebook numbers html
+        let defaults = UserDefaults.standard
+        let hasLoadedWKWebView = defaults.bool(forKey: "hasLoadedWKWebView");
+        
+        // If we have loaded the WKWebView before we can start right up
+        if (hasLoadedWKWebView) {
+            loadWKWebView(uiWebViewLoadStorage: nil)
+            
+        // First time we need to load the old type of webview and get any configuration
+        } else {
+            loadUIWebView()
+        }
+    }
+    
+    // Load the old style UIWebView so we can pull the local storage out (sad we have to do this)
+    func loadUIWebView() {
+        let uiWebView = UIWebView()
+        view = uiWebView;
         let htmlPath = Bundle.main.path(forResource: "index", ofType: "html", inDirectory: "notebook-numbers")
         let htmlUrl = URL(fileURLWithPath: htmlPath!, isDirectory: false)
+        uiWebView.loadRequest(URLRequest(url: htmlUrl));
+        uiWebView.delegate = self;
+    }
+    
+    
+    func loadWKWebView(uiWebViewLoadStorage: [String: Any]?) {
+        
+        let contentController = WKUserContentController()
+        // Set up our JS integration
+        contentController.add(self, name: "swift")
+        
+        // If we've passed in a dict of local storage items 
+        // let's turn this into some JS to start up with
+        if uiWebViewLoadStorage != nil {
+            let loadLoadStorage = getLoadLocalStorageUserScript(
+                uiWebViewLoadStorage: uiWebViewLoadStorage!)
+            contentController.addUserScript(loadLoadStorage)
+        }
+        
+        // Full screen and add our script
+        let config = WKWebViewConfiguration()
+        config.userContentController = contentController
+        webView = WKWebView(frame: .zero, configuration: config)
+        view = webView
+        
+        // Load the notebook numbers html
+        let htmlPath = Bundle.main.path(
+            forResource: "index",
+            ofType: "html",
+            inDirectory: "notebook-numbers")
+        let htmlUrl = URL(fileURLWithPath: htmlPath!, isDirectory: false)
         webView!.loadFileURL(htmlUrl, allowingReadAccessTo: htmlUrl)
+        
+        // Next time we run we can straight up load the WKWebView
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: "hasLoadedWKWebView");
+    }
+    
+    // Turn a dictionary of JS things into a script which sets up localStorage
+    func getLoadLocalStorageUserScript(uiWebViewLoadStorage: [String: Any]) -> WKUserScript {
+        var loadLocalStorageScript = "";
+        for (key, value) in uiWebViewLoadStorage {
+            // Do some horrible JS string munging
+            let strValue = value as! String;
+            let setLocalStorageItemJs = "localStorage.setItem('\(key)','\(strValue)');"
+            loadLocalStorageScript += setLocalStorageItemJs;
+        }
+        let userScript = WKUserScript(source: loadLocalStorageScript,
+                                      injectionTime: WKUserScriptInjectionTime.atDocumentStart,
+                                      forMainFrameOnly: true)
+        return userScript;
+    }
+    
+    // When the old-style UIWebView is loaded then we can boot up the new WKWebView
+    // with our original localStorage data
+    func webViewDidFinishLoad(_ uiWebView: UIWebView) {
+        if (!isUIWebViewLoaded &&
+            uiWebView.stringByEvaluatingJavaScript(from: "document.readyState") == "complete") {
+            isUIWebViewLoaded = true;
+            let localStorage = uiWebView.stringByEvaluatingJavaScript(from: "JSON.stringify(localStorage)")
+            if let dictionary = localStorage?.toJSON() as? [String: Any] {
+                loadWKWebView(uiWebViewLoadStorage: dictionary)
+            } else {
+                loadWKWebView(uiWebViewLoadStorage: nil)
+            }
+        }
     }
     
     func runJavaScriptEvent(event: String) {
-        let event = "eventManager.vent.trigger('" + event + "')"
+        let event = "eventManager.vent.trigger('\(event)')"
         self.webView!.evaluateJavaScript(event)
     }
     
@@ -62,6 +136,7 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
         }
     }
     
+    // Handle JS events
     public func userContentController(
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage) {
@@ -149,14 +224,12 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
-    override func viewDidLayoutSubviews() {
-        // Make full screen
-        webView!.frame = CGRect(
-            x: 0,
-            y: 0,
-            width: self.view.frame.size.width,
-            height: self.view.frame.size.height)
+}
+
+extension String {
+    func toJSON() -> Any? {
+        guard let data = self.data(using: .utf8, allowLossyConversion: false) else { return nil }
+        return try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)
     }
 }
 
