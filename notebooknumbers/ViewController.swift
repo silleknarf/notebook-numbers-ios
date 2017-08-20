@@ -10,7 +10,12 @@ import GameKit
 import WebKit
 import UIKit
 
-class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScriptMessageHandler, UIWebViewDelegate {
+class ViewController:
+    UIViewController,
+    GKGameCenterControllerDelegate,
+    WKScriptMessageHandler,
+    UIWebViewDelegate,
+    WKNavigationDelegate {
     
     private var webView: WKWebView?;
     
@@ -32,9 +37,6 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
-        
-        // Call the GC authentication controller
-        authenticateLocalPlayer()
         
         let defaults = UserDefaults.standard
         let hasLoadedWKWebView = defaults.bool(forKey: "hasLoadedWKWebView");
@@ -59,7 +61,6 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
         uiWebView.delegate = self;
     }
     
-    
     func loadWKWebView(uiWebViewLoadStorage: [String: Any]?) {
         
         let contentController = WKUserContentController()
@@ -78,6 +79,7 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
         webView = WKWebView(frame: .zero, configuration: config)
+        webView?.navigationDelegate = self
         view = webView
         
         // Load the notebook numbers html
@@ -87,6 +89,12 @@ class ViewController: UIViewController, GKGameCenterControllerDelegate, WKScript
             inDirectory: "notebook-numbers")
         let htmlUrl = URL(fileURLWithPath: htmlPath!, isDirectory: false)
         webView!.loadFileURL(htmlUrl, allowingReadAccessTo: htmlUrl)
+    }
+    
+    // WKWebView has loaded
+    func webView(_ didFinishwebView: WKWebView, didFinish navigation: WKNavigation!) {
+        // Call the GC authentication controller
+        authenticateLocalPlayer()
         
         // Next time we run we can straight up load the WKWebView
         let defaults = UserDefaults.standard
