@@ -122,10 +122,16 @@ class ViewController:
         if (!isUIWebViewLoaded &&
             uiWebView.stringByEvaluatingJavaScript(from: "document.readyState") == "complete") {
             isUIWebViewLoaded = true;
+            var isWKWebViewLoaded = false;
             let localStorage = uiWebView.stringByEvaluatingJavaScript(from: "JSON.stringify(localStorage)")
-            if let dictionary = localStorage?.toJSON() as? [String: Any] {
-                loadWKWebView(uiWebViewLoadStorage: dictionary)
-            } else {
+            if localStorage != nil && localStorage != "" {
+                if let dictionary = localStorage!.toJSON() as? [String: Any] {
+                    loadWKWebView(uiWebViewLoadStorage: dictionary)
+                    isWKWebViewLoaded = true
+                }
+            }
+            
+            if (!isWKWebViewLoaded){
                 loadWKWebView(uiWebViewLoadStorage: nil)
             }
         }
