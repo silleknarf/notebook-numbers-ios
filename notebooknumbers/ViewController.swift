@@ -169,7 +169,6 @@ class ViewController:
         }
     }
     
-    // MARK: - AUTHENTICATE LOCAL PLAYER
     func authenticateLocalPlayer() {
         let localPlayer: GKLocalPlayer = GKLocalPlayer.localPlayer()
         
@@ -203,7 +202,6 @@ class ViewController:
         }
     }
     
-    // MARK: - ADD 10 POINTS TO THE SCORE AND SUBMIT THE UPDATED SCORE TO GAME CENTER
     @IBAction func updateLeaderboardInGC(score: Int64) {
         if (!self.isLoggedIn) {
             return
@@ -220,7 +218,6 @@ class ViewController:
         }
     }
     
-    // MARK: - OPEN GAME CENTER LEADERBOARD
     @IBAction func openLeaderboardinGC() {
         let gcVC = GKGameCenterViewController()
         gcVC.gameCenterDelegate = self
@@ -246,4 +243,3 @@ extension String {
         return try? JSONSerialization.jsonObject(with: data, options: .mutableContainers)
     }
 }
-
